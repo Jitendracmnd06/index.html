@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#faf9f7;--surface:#ffffff;--surface2:#f3f1ee;
+  --border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.16);
+  --text:#1a1917;--text2:#6b6860;--text3:#a09e9a;
+  --accent:#c4751a;--accent-bg:#fff4e6;
+  --info-bg:#ebf2ff;--info:#1a4fb5;
+  --danger:#b91c1c;--danger-bg:#fef2f2;
+  --r:10px;--rs:6px
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#141312;--surface:#1e1d1b;--surface2:#272522;
+  --border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.16);
+  --text:#f0ede8;--text2:#9e9b95;--text3:#5a5750;
+  --accent:#e8921f;--accent-bg:#2a1f0d;
+  --info-bg:#1a2540;--info:#7aadff;
+  --danger:#f87171;--danger-bg:#2a1515
+}}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.5}
+.app{max-width:800px;margin:0 auto;padding:1.5rem 1rem}
+.hdr{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.25rem}
+.clock{font-family:'DM Mono',monospace;font-size:32px;font-weight:500;line-height:1}
+.dlbl{font-size:11px;color:var(--text2);margin-bottom:5px}
+.grt{font-size:13px;font-weight:500}
+.loc{font-size:11px;color:var(--text3)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:1.25rem}
+.stat{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--rs);padding:.6rem .8rem}
+.stat-lbl{font-size:10px;color:var(--text3);margin-bottom:3px;letter-spacing:.03em}
+.stat-val{font-size:22px;font-weight:500;font-family:'DM Mono',monospace}
+.nav{display:flex;gap:2px;background:var(--surface2);border-radius:var(--r);padding:3px;margin-bottom:1.25rem}
+.nb{flex:1;background:none;border:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text2);padding:7px 8px;border-radius:8px;cursor:pointer;transition:all .15s;font-weight:400}
+.nb.on{background:var(--surface);color:var(--text);font-weight:500}
+.sec{display:none}.sec.on{display:block}
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:1rem 1.25rem}
+input[type=text],input[type=password],input[type=number],textarea,select{
+  background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--rs);
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 12px;
+  outline:none;transition:border-color .15s
+}
+input[type=text]:focus,input[type=password]:focus,textarea:focus{border-color:var(--accent)}
+textarea{width:100%;resize:vertical}
+button{
+  background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--rs);
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
+  padding:8px 16px;cursor:pointer;transition:all .15s
+}
+button:hover{background:var(--surface2)}
+button:active{transform:scale(.98)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.primary:hover{opacity:.9}
+button.danger{border-color:var(--danger);color:var(--danger)}
+.tag{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:500;white-space:nowrap}
+.ti{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border)}
+.ti:last-child{border-bottom:none}
+.tcb{width:15px;height:15px;cursor:pointer;accent-color:var(--accent);flex-shrink:0}
+.ttxt{flex:1;font-size:13px}
+.ttxt.done{text-decoration:line-through;color:var(--text3)}
+.dbtn{background:none;border:none;color:var(--text3);font-size:12px;padding:2px 4px;cursor:pointer}
+.dbtn:hover{color:var(--text);background:none}
+.cbox{height:240px;overflow-y:auto;margin-bottom:10px}
+.cmsg{padding:8px 12px;border-radius:8px;margin:5px 0;font-size:13px;line-height:1.6;white-space:pre-wrap}
+.umsg{background:var(--surface2);margin-left:2rem}
+.amsg{background:var(--info-bg);color:var(--info);margin-right:2rem}
+.pomo-wrap{text-align:center;padding:1.5rem 0}
+.ptime{font-family:'DM Mono',monospace;font-size:58px;font-weight:500;letter-spacing:-2px;line-height:1}
+.pmode{font-size:12px;color:var(--text2);margin-bottom:6px}
+.pbar-wrap{height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;width:220px;margin:14px auto}
+.pbar{height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width .8s linear}
+.psess{font-size:12px;color:var(--text3);margin-bottom:18px}
+.pbtns{display:flex;gap:10px;justify-content:center}
+.pcfg{display:flex;gap:20px;justify-content:center;margin-top:1.5rem;font-size:12px;color:var(--text2);align-items:center}
+.pcfg input{width:44px;text-align:center;padding:4px 6px}
+.jent{border-top:0.5px solid var(--border);padding:10px 0}
+.jts{font-size:10px;color:var(--text3);margin-bottom:4px;font-family:'DM Mono',monospace}
+.jtxt{font-size:13px;line-height:1.5}
+.slbl{font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:500}
+.snote{font-size:11px;color:var(--text3);margin-top:4px}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+@media(max-width:480px){.stats{grid-template-columns:repeat(2,1fr)}.clock{font-size:24px}.nb{font-size:11px;padding:6px 4px}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="hdr">
+    <div>
+      <div class="dlbl" id="dlbl">—</div>
+      <div class="clock" id="clk">--:--</div>
+    </div>
+    <div style="text-align:right">
+      <div class="loc">Bengaluru · IST</div>
+      <div class="grt" id="grt">—</div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-lbl">done</div><div class="stat-val" id="sdone">0</div></div>
+    <div class="stat"><div class="stat-lbl">remaining</div><div class="stat-val" id="srem">0</div></div>
+    <div class="stat"><div class="stat-lbl">pomodoros</div><div class="stat-val" id="spomo">0</div></div>
+    <div class="stat"><div class="stat-lbl">journal</div><div class="stat-val" id="sjrn">0</div></div>
+  </div>
+
+  <div class="nav">
+    <button class="nb on" onclick="tab('tasks',this)">Tasks</button>
+    <button class="nb" onclick="tab('pomo',this)">Pomodoro</button>
+    <button class="nb" onclick="tab('journal',this)">Journal</button>
+    <button class="nb" onclick="tab('chat',this)">AI Chat</button>
+    <button class="nb" onclick="tab('settings',this)">Settings</button>
+  </div>
+
+  <!-- Tasks -->
+  <div id="sec-tasks" class="sec on card">
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <input type="text" id="tinp" placeholder="Add a task..." style="flex:1">
+      <select id="tcat" style="font-size:12px">
+        <option value="study">study</option>
+        <option value="admin">admin</option>
+        <option value="project">project</option>
+        <option value="personal">personal</option>
+      </select>
+      <button onclick="addTask()">+</button>
+    </div>
+    <div id="tlist"><div style="font-size:12px;color:var(--text3);padding:6px 0">No tasks yet.</div></div>
+  </div>
+
+  <!-- Pomodoro -->
+  <div id="sec-pomo" class="sec card">
+    <div class="pomo-wrap">
+      <div class="pmode" id="pmode">Focus session</div>
+      <div class="ptime" id="ptimer">25:00</div>
+      <div class="pbar-wrap"><div class="pbar" id="pbar"></div></div>
+      <div class="psess" id="psess">Session 1</div>
+      <div class="pbtns">
+        <button id="pbtn" class="primary" onclick="togglePomo()" style="min-width:90px">Start</button>
+        <button onclick="resetPomo()">Reset</button>
+        <button onclick="skipPomo()">Skip →</button>
+      </div>
+      <div class="pcfg">
+        <label>Work <input type="number" id="pwlen" value="25" min="1" max="90"> min</label>
+        <label>Break <input type="number" id="pblen" value="5" min="1" max="30"> min</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Journal -->
+  <div id="sec-journal" class="sec card">
+    <textarea id="jinp" rows="4" placeholder="What's on your mind? (Ctrl+Enter to save)"></textarea>
+    <div style="display:flex;justify-content:flex-end;margin:8px 0 16px">
+      <button onclick="saveJournal()">Save entry</button>
+    </div>
+    <div id="jents"></div>
+  </div>
+
+  <!-- AI Chat -->
+  <div id="sec-chat" class="sec card">
+    <div class="cbox" id="cbox">
+      <div class="cmsg amsg">Hey! I'm your personal assistant. I can see your tasks, journal, and Pomodoro progress. Ask me anything — I'll always give you multiple options, not just one answer.</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <input type="text" id="cinp" placeholder="Ask anything — I know your tasks & journal..." style="flex:1">
+      <button id="cbtn" onclick="sendChat()">→</button>
+    </div>
+    <div id="nokey" style="display:none;font-size:12px;color:var(--accent);margin-top:6px">⚠ Add your Anthropic API key in Settings to enable AI chat.</div>
+  </div>
+
+  <!-- Settings -->
+  <div id="sec-settings" class="sec card">
+    <div style="margin-bottom:1.5rem">
+      <div class="slbl">Anthropic API Key</div>
+      <div style="display:flex;gap:8px">
+        <input type="password" id="kinp" placeholder="sk-ant-api03-..." style="flex:1">
+        <button onclick="saveKey()">Save</button>
+      </div>
+      <div class="snote">Stored only in your browser's localStorage. Get your key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent)">console.anthropic.com</a>.</div>
+      <div id="kstatus" style="display:none;font-size:12px;color:var(--accent);margin-top:6px"></div>
+    </div>
+    <div style="margin-bottom:1.5rem">
+      <div class="slbl">Reset Pomodoro count</div>
+      <button onclick="resetPomoCount()">Reset to 0</button>
+    </div>
+    <div>
+      <div class="slbl">Clear all data</div>
+      <button class="danger" onclick="clearAll()">Clear tasks, journal & sessions</button>
+      <div class="snote">Cannot be undone.</div>
+    </div>
+  </div>
+
+</div>
+<script>
+let tasks=[],journal=[],chatHist=[],pomoSessions=0;
+let pomoRunning=false,pomoBreak=false,pomoSec=0,pomoTotal=0,pomoInterval=null;
+
+const CS={
+  study:{bg:'#dbeafe',c:'#1e40af'},
+  admin:{bg:'#dcfce7',c:'#166534'},
+  project:{bg:'#fef3c7',c:'#92400e'},
+  personal:{bg:'#fce7f3',c:'#9d174d'}
+};
+
+const isDark=()=>window.matchMedia('(prefers-color-scheme:dark)').matches;
+function tagStyle(cat){
+  const m=isDark()?{
+    study:{bg:'#1e3a5f',c:'#93c5fd'},
+    admin:{bg:'#14532d',c:'#86efac'},
+    project:{bg:'#451a03',c:'#fcd34d'},
+    personal:{bg:'#500724',c:'#f9a8d4'}
+  }:CS;
+  return m[cat]||CS.personal;
+}
+
+function tab(id,btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  document.getElementById('sec-'+id).classList.add('on');
+  btn.classList.add('on');
+}
+
+function load(){
+  try{tasks=JSON.parse(localStorage.getItem('agmd-tasks')||'[]')}catch(e){tasks=[]}
+  try{journal=JSON.parse(localStorage.getItem('agmd-journal')||'[]')}catch(e){journal=[]}
+  pomoSessions=parseInt(localStorage.getItem('agmd-pomo')||'0');
+  const k=localStorage.getItem('agmd-key');
+  if(k)document.getElementById('kinp').value=k;
+  renderTasks();renderJournal();stats();
+}
+
+function tick(){
+  const n=new Date();
+  const o={timeZone:'Asia/Kolkata'};
+  document.getElementById('clk').textContent=n.toLocaleTimeString('en-IN',{...o,hour:'2-digit',minute:'2-digit'});
+  document.getElementById('dlbl').textContent=n.toLocaleDateString('en-IN',{...o,weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const h=parseInt(n.toLocaleTimeString('en-IN',{...o,hour:'2-digit',hour12:false}));
+  document.getElementById('grt').textContent=h<5?'Still up?':h<12?'Good morning!':h<17?'Good afternoon!':'Good evening!';
+}
+setInterval(tick,1000);tick();
+
+function sv(k,v){localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v))}
+function addTask(){
+  const i=document.getElementById('tinp'),c=document.getElementById('tcat').value,t=i.value.trim();
+  if(!t)return;
+  tasks.push({id:Date.now(),txt:t,cat:c,done:false,date:new Date().toLocaleDateString('en-IN',{timeZone:'Asia/Kolkata'})});
+  i.value='';sv('agmd-tasks',tasks);renderTasks();stats();
+}
+function toggleTask(id){tasks=tasks.map(t=>t.id===id?{...t,done:!t.done}:t);sv('agmd-tasks',tasks);renderTasks();stats()}
+function delTask(id){if(!confirm('Delete this task?'))return;tasks=tasks.filter(t=>t.id!==id);sv('agmd-tasks',tasks);renderTasks();stats()}
+function renderTasks(){
+  const el=document.getElementById('tlist');
+  if(!tasks.length){el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:6px 0">No tasks yet. Add one above.</div>';return}
+  const today=new Date().toLocaleDateString('en-IN',{timeZone:'Asia/Kolkata'});
+  const todayTasks=tasks.filter(t=>t.date===today);
+  const olderTasks=tasks.filter(t=>t.date!==today);
+  let html='';
+  if(todayTasks.length){html+='<div style="font-size:10px;color:var(--text3);padding:4px 0 6px;letter-spacing:.04em">TODAY</div>'+todayTasks.map(taskHtml).join('')}
+  if(olderTasks.length){html+=`<div style="font-size:10px;color:var(--text3);padding:${todayTasks.length?'14px':'4px'} 0 6px;letter-spacing:.04em">EARLIER</div>`+olderTasks.map(taskHtml).join('')}
+  el.innerHTML=html;
+}
+function taskHtml(t){
+  const s=tagStyle(t.cat);
+  return`<div class="ti">
+    <input type="checkbox" class="tcb" ${t.done?'checked':''} onchange="toggleTask(${t.id})">
+    <span class="ttxt${t.done?' done':''}">${esc(t.txt)}</span>
+    <span class="tag" style="background:${s.bg};color:${s.c}">${t.cat}</span>
+    <button class="dbtn" onclick="delTask(${t.id})">✕</button>
+  </div>`;
+}
+
+function saveJournal(){
+  const txt=document.getElementById('jinp').value.trim();
+  if(!txt)return;
+  const n=new Date();
+  const ts=n.toLocaleString('en-IN',{timeZone:'Asia/Kolkata',weekday:'short',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  journal.unshift({txt,ts,id:Date.now()});
+  document.getElementById('jinp').value='';
+  sv('agmd-journal',journal);renderJournal();stats();
+}
+function renderJournal(){
+  const el=document.getElementById('jents');
+  el.innerHTML=journal.length?journal.map(e=>`<div class="jent"><div class="jts">${e.ts}</div><div class="jtxt">${esc(e.txt)}</div></div>`).join('')
+    :'<div style="font-size:12px;color:var(--text3)">No entries yet.</div>';
+}
+
+function stats(){
+  document.getElementById('sdone').textContent=tasks.filter(t=>t.done).length;
+  document.getElementById('srem').textContent=tasks.filter(t=>!t.done).length;
+  document.getElementById('spomo').textContent=pomoSessions;
+  document.getElementById('sjrn').textContent=journal.length;
+}
+
+function pomoMins(){return parseInt(document.getElementById(pomoBreak?'pblen':'pwlen').value)||25}
+function initPomo(){pomoTotal=pomoMins()*60;pomoSec=pomoTotal;updatePUI()}
+function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function updatePUI(){
+  document.getElementById('ptimer').textContent=fmt(pomoSec);
+  document.getElementById('pmode').textContent=pomoBreak?'Break time ☕':'Focus session';
+  document.getElementById('psess').textContent='Session '+(pomoSessions+1);
+  document.getElementById('pbar').style.width=(pomoTotal>0?Math.round((1-pomoSec/pomoTotal)*100):0)+'%';
+  document.title=pomoRunning?fmt(pomoSec)+' — Command Center':'Command Center';
+}
+function togglePomo(){
+  if(pomoRunning){clearInterval(pomoInterval);pomoInterval=null;pomoRunning=false;document.getElementById('pbtn').textContent='Resume'}
+  else{
+    if(!pomoTotal)initPomo();
+    pomoRunning=true;document.getElementById('pbtn').textContent='Pause';
+    pomoInterval=setInterval(()=>{
+      pomoSec--;updatePUI();
+      if(pomoSec<=0){
+        clearInterval(pomoInterval);pomoRunning=false;
+        if(!pomoBreak){pomoSessions++;sv('agmd-pomo',String(pomoSessions));stats();new Notification&&Notification.permission==='granted'&&new Notification('Pomodoro done! Time for a break.',{icon:''})}
+        pomoBreak=!pomoBreak;initPomo();
+        document.getElementById('pbtn').textContent='Start';
+      }
+    },1000);
+  }
+}
+function resetPomo(){clearInterval(pomoInterval);pomoRunning=false;pomoBreak=false;pomoSec=0;pomoTotal=0;document.getElementById('pbtn').textContent='Start';updatePUI();document.title='Command Center'}
+function skipPomo(){clearInterval(pomoInterval);pomoRunning=false;if(!pomoBreak){pomoSessions++;sv('agmd-pomo',String(pomoSessions));stats()}pomoBreak=!pomoBreak;initPomo();document.getElementById('pbtn').textContent='Start'}
+function resetPomoCount(){if(!confirm('Reset Pomodoro count to 0?'))return;pomoSessions=0;sv('agmd-pomo','0');stats()}
+
+function buildSys(){
+  const now=new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata',weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const td=tasks.length?'\n\nYour task list:\n'+tasks.map(t=>`- [${t.done?'DONE':'TODO'}] ${t.txt} (${t.cat}, added ${t.date})`).join('\n'):'\n\nNo tasks yet.';
+  const jd=journal.length?'\n\nRecent journal entries:\n'+journal.slice(0,3).map(e=>`- ${e.ts}: ${e.txt}`).join('\n'):'';
+  return`You are a personalized AI assistant for an undergraduate student in Bengaluru, India (IST, UTC+5:30).
+
+Profile (agent.md):
+- Uses you for: planning, scheduling, learning, project management, life admin, journaling
+- Tone: semi-casual, friendly, sharp — no fluff
+- ALWAYS give multiple options/approaches, never just one answer
+- ALWAYS end with a brief 1–2 line summary
+- Lead with the answer, never bury it
+- No unnecessary disclaimers
+- Factor IST timezone into all scheduling advice
+- Balance doing vs teaching — flag when they should learn something themselves rather than just getting the answer
+- Today: ${now} IST
+- Pomodoro sessions completed today: ${pomoSessions}
+${td}${jd}`;
+}
+
+function addMsg(role,txt){
+  const b=document.getElementById('cbox'),d=document.createElement('div');
+  d.className='cmsg '+(role==='user'?'umsg':'amsg');d.textContent=txt;
+  b.appendChild(d);b.scrollTop=b.scrollHeight;
+}
+async function sendChat(){
+  const k=localStorage.getItem('agmd-key');
+  if(!k){document.getElementById('nokey').style.display='block';return}
+  document.getElementById('nokey').style.display='none';
+  const inp=document.getElementById('cinp'),btn=document.getElementById('cbtn'),txt=inp.value.trim();
+  if(!txt||btn.disabled)return;
+  inp.value='';btn.disabled=true;btn.textContent='…';
+  addMsg('user',txt);chatHist.push({role:'user',content:txt});
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,system:buildSys(),messages:chatHist})
+    });
+    const d=await r.json();
+    if(d.error){addMsg('ai','Error: '+d.error.message);chatHist.pop()}
+    else{const rep=d.content?.find(b=>b.type==='text')?.text||'No response.';chatHist.push({role:'assistant',content:rep});addMsg('ai',rep)}
+  }catch(e){addMsg('ai','Connection error. Check your API key in Settings.');chatHist.pop()}
+  btn.disabled=false;btn.textContent='→';
+}
+
+function saveKey(){
+  const k=document.getElementById('kinp').value.trim();
+  localStorage.setItem('agmd-key',k);
+  const s=document.getElementById('kstatus');
+  s.style.display='block';s.textContent=k?'Key saved. AI chat is ready.':'Key cleared.';
+  setTimeout(()=>s.style.display='none',2500);
+}
+function clearAll(){
+  if(!confirm('Clear all tasks, journal entries, and Pomodoro sessions?'))return;
+  tasks=[];journal=[];pomoSessions=0;
+  sv('agmd-tasks',tasks);sv('agmd-journal',journal);sv('agmd-pomo','0');
+  renderTasks();renderJournal();stats();resetPomo();
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+document.getElementById('tinp').addEventListener('keydown',e=>e.key==='Enter'&&addTask());
+document.getElementById('cinp').addEventListener('keydown',e=>e.key==='Enter'&&sendChat());
+document.getElementById('jinp').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.ctrlKey)saveJournal()});
+if(Notification&&Notification.permission==='default')Notification.requestPermission();
+
+initPomo();load();
+</script>
+</body>
+</html>
